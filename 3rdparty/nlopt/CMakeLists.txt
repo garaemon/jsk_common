@@ -1,0 +1,40 @@
+project(nlopt)
+
+cmake_minimum_required(VERSION 2.4.6)
+
+find_package(catkin REQUIRED COMPONENTS mk)
+
+add_custom_target(libnlopt_cxx ALL
+  DEPENDS ${PROJECT_SOURCE_DIR}/lib/libnlopt_cxx.so)
+add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/lib/libnlopt_cxx.so
+  COMMAND cmake -E chdir ${PROJECT_SOURCE_DIR} make -f ${PROJECT_SOURCE_DIR}/Makefile DSTDIR=${PROJECT_SOURCE_DIR}
+  MK_DIR=${mk_PREFIX}/share/mk
+  COMMAND cp ${PROJECT_SOURCE_DIR}/lib/libnlopt* ${CATKIN_DEVEL_PREFIX}/lib
+  DEPENDS Makefile)
+
+catkin_package(
+    DEPENDS
+    CATKIN_DEPENDS
+    INCLUDE_DIRS
+    LIBRARIES nlopt_cxx
+    EXPORTED_TARGETS libnlopt_cxx
+)
+
+# set(NLOPTDIR ${CATKIN_PACKAGE_SHARE_DESTINATION}/jskeus/eus)
+# install(CODE "message(\"-- Force change Cflags of \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_LIB_DESTINATION}/pkgconfig/euslisp.pc \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake/\${PROJECT_NAME}Config.cmake\") execute_process(COMMAND sed -i s@\${CMAKE_INSTALL_PREFIX}/include@\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/include@ \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_LIB_DESTINATION}/pkgconfig/euslisp.pc \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake/${PROJECT_NAME}Config.cmake)")
+
+# install(DIRECTORY lib
+#   DESTINATION ${EUSDIR}/lib
+#   FILES_MATCHING PATTERN "*.l" PATTERN ".svn" EXCLUDE
+# )
+
+# install(DIRECTORY test
+#   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+#   USE_SOURCE_PERMISSIONS
+#   )
+install(DIRECTORY lib/
+  DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+install(DIRECTORY include/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+install(DIRECTORY share/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})

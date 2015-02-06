@@ -3,6 +3,7 @@
 /*                                                            */
 /*                  2010/09/15    k-okada@jsk.t.u-tokyo.ac.jp */
 
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>

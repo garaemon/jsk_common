@@ -1,41 +1,25 @@
 #
-# https://code.ros.org/trac/ros-pkg/ticket/4276
-#
 all: urdf_to_collada
 
-
-ifeq ($(shell rosversion -d),groovy)
-#HG_REVISION = `rosversion collada_urdf`
-## robot_model moved to github, 1.9.32 was last version in kforge
-GIT_DIR = build/robot_model
-GIT_URL = https://github.com/ros/robot_model.git
-GIT_REVISION = groovy-devel
-GIT_PATCH = set_url_name_groovy.patch cmake_catkin.patch
-BUILD_BIN_DIR  = `pwd`/$(GIT_DIR)/collada_urdf/build/devel/lib/collada_urdf
+GIT_DIR = build/robot_model/src
+GIT_URL = git://github.com/ros/robot_model.git
+GIT_REVISION = ${SOURCE_DISTRO}-devel
+PATCH_DIR = $(CURDIR)
+GIT_PATCH = ${PATCH_DIR}/use_assimp_devel.patch ${PATCH_DIR}/collada_urdf_latest_gazebo.patch
+BUILD_BIN_DIR  = build/robot_model/devel/lib/collada_urdf
 include $(shell rospack find mk)/git_checkout.mk
-SRC_DIR = $(GIT_DIR)
-else ## fuerte
-GIT_DIR = build/robot_model
-GIT_URL = https://github.com/ros/robot_model.git
-GIT_REVISION = robot_model-`rosversion robot_model`
-GIT_PATCH = cyliner_box_sphere.patch set_url_name.patch cmake_rosbuild.patch collada-dom.patch downloads.patch
-BUILD_BIN_DIR  = `pwd`/$(GIT_DIR)/collada_urdf/bin
-include $(shell rospack find mk)/git_checkout.mk
-SRC_DIR = $(GIT_DIR)
-endif
 
-urdf_to_collada:$(SRC_DIR) patched
-ifeq ($(shell rosversion -d),groovy)
-	ROS_PACKAGE_PATH=`pwd`/$(SRC_DIR)/collada_urdf:$$ROS_PACKAGE_PATH make -C `pwd`/$(SRC_DIR)/collada_urdf
-	HG_ROS_PACKAGE_PATH=
-else
-	ROS_PACKAGE_PATH=`pwd`/$(SRC_DIR)/collada_urdf:`pwd`/$(SRC_DIR)/colladadom:$$ROS_PACKAGE_PATH make -C `pwd`/$(SRC_DIR)/colladadom
-	ROS_PACKAGE_PATH=`pwd`/$(SRC_DIR)/collada_urdf:`pwd`/$(SRC_DIR)/colladadom:$$ROS_PACKAGE_PATH make -C `pwd`/$(SRC_DIR)/collada_urdf
-endif
+disable_ssl:
+	git config --global http.sslVerify false
+
+urdf_to_collada: disable_ssl $(GIT_DIR) patched
+	(cd build/robot_model; PKG_CONFIG_PATH=`rospack find assimp_devel`/lib/pkgconfig:${PKG_CONFIG_PATH} catkin_make --pkg collada_urdf --force-cmake)
 	cp $(BUILD_BIN_DIR)/urdf_to_collada .
+	cp $(BUILD_BIN_DIR)/collada_to_urdf .
 
 clean:
-	if [ -f $(SRC_DIR)/collada_urdf ] ; then ROS_PACKAGE_PATH=`pwd`/$(SRC_DIR)/collada_urdf:$$ROS_PACKAGE_PATH make -C `pwd`/$(SRC_DIR)/collada_urdf clean; fi
+	if [ -f build/robot_model/build ] ; then catkin_make clean; fi
+	rm -fr build/robot_model/build
 	rm -rf installed patched
 	rm -f urdf_to_collada
 
